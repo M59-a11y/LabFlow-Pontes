@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Laboratorial - Marcos Pontes</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0575E6">
+    <link rel="apple-touch-icon" href="icon.png">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        :root { --primary-gradient: linear-gradient(135deg, #a8e063, #0575E6); --sus-color: #1b5e20; --sesc-color: #0d47a1; }
+        body { font-family: 'Inter', sans-serif; background: var(--primary-gradient); background-attachment: fixed; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { background: #ffffff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 1100px; }
+        .no-print h1 { color: #1a237e; text-align: center; margin-bottom: 15px; }
+        .mes-seletor { text-align: center; margin-bottom: 25px; }
+        input[type="month"] { padding: 10px 20px; border-radius: 12px; border: 2px solid var(--sus-color); font-weight: bold; color: var(--sus-color); background-color: #f0fdf4; outline: none; cursor: pointer; font-size: 1.2rem; text-transform: capitalize; }
+        .label-tabela { font-weight: bold; font-size: 1.1rem; margin: 15px 0 5px 0; display: block; }
+        .wrapper-tabela { width: 100%; margin-bottom: 15px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #333; text-align: center; padding: 4px 0; font-size: 11px; font-family: 'Arial Narrow', sans-serif; }
+        th { background: #f0f0f0; }
+        input[type="number"] { width: 100%; border: none; text-align: center; font-size: 12px; outline: none; background: transparent; padding: 4px 0; -moz-appearance: textfield; font-family: 'Arial Narrow', sans-serif; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .summary-panel { background: #f8f9fa; padding: 15px; border-radius: 15px; border: 2px solid var(--sesc-color); margin-top: 10px; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .row-calc { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1rem; border-bottom: 1px solid #eee; }
+        .val-num { font-weight: 700; font-family: 'Courier New', monospace; color: #333; }
+        .total-final { font-size: 1.4rem; font-weight: bold; color: var(--sesc-color) !important; border-top: 2px dashed var(--sesc-color); padding-top: 8px; }
+        .chart-box { max-width: 500px; margin: 15px auto; height: 130px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-print { flex: 2; padding: 15px; background: #1a237e; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-sec { flex: 1; padding: 12px; background: #454d55; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.8rem; }
+        .report-header, .footer-print { display: none; }
+
+        @media print {
+            @page { size: A4 portrait; margin: 1cm 1cm; }
+            body { background: white; padding: 0; display: block; }
+            .container { box-shadow: none; width: 100% !important; padding: 0; border: none; }
+            .no-print, .btn-group, .mes-seletor { display: none !important; }
+            .report-header { display: block; text-align: center; margin-top: 30px; margin-bottom: 15px; border-bottom: 1.5px solid #000; padding-bottom: 10px; }
+            .report-header h1 { font-size: 16pt; margin: 0; }
+            .label-tabela { font-size: 9pt; margin-top: 5px; }
+            table { font-size: 7pt; width: 100% !important; border: 0.5pt solid #000; }
+            th, td { padding: 1px 0 !important; border: 0.3pt solid #000; }
+            .summary-panel { padding: 8px; border: 1pt solid #000; margin-top: 5px; width: 100% !important; max-width: none !important; box-sizing: border-box; }
+            .total-final { font-size: 11pt; }
+            .chart-box { max-width: 450px; height: 100px; margin: 10px auto; page-break-inside: avoid; }
+            .footer-print { display: block; text-align: center; margin-top: 60px; page-break-inside: avoid; }
+            .data-extenso { font-size: 9pt; margin-bottom: 35px; }
+            .assinatura-linha { width: 220px; border-top: 0.8pt solid #000; margin: 0 auto 5px auto; }
+            .assinatura-nome { font-size: 10pt; font-weight: 700; margin: 0; text-transform: uppercase; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="report-header">
+        <h1>GESTÃO LABORATORIAL</h1>
+        <h2>Fechamento de Produção Mensal</h2>
+        <h3 id="txt-mes-ref">Mês de Referência: ---</h3>
+    </div>
+    <div class="no-print">
+        <h1>Produção Mensal</h1>
+        <div class="mes-seletor"><input type="month" id="mesReferencia" onchange="mudarMes()"></div>
+    </div>
+    <span class="label-tabela" style="color: var(--sus-color);">Laudos SUS</span>
+    <div class="wrapper-tabela"><table id="tblSus"><thead id="hSus"></thead><tbody id="bSus"></tbody></table></div>
+    <span class="label-tabela" style="color: var(--sesc-color);">Laudos SESC</span>
+    <div class="wrapper-tabela"><table id="tblSesc"><thead id="hSesc"></thead><tbody id="bSesc"></tbody></table></div>
+    <div class="summary-panel">
+        <div class="row-calc"><span>Total SUS:</span> <span id="txtSus" class="val-num">0</span></div>
+        <div class="row-calc"><span>Total SESC:</span> <span id="txtSesc" class="val-num">0</span></div>
+        <div class="row-calc"><span>Soma Total (Qtd):</span> <span id="txtSoma" class="val-num">0</span></div>
+        <div class="row-calc total-final"><span>VALOR TOTAL:</span> <span id="txtFinal" class="val-num">R$ 0,00</span></div>
+    </div>
+    <div class="chart-box"><canvas id="graficoBarras"></canvas></div>
+    <div class="footer-print">
+        <div id="dataAtual" class="data-extenso">---</div>
+        <div class="assinatura-linha"></div>
+        <p class="assinatura-nome">MARCOS PONTES</p>
+        <p class="assinatura-cargo">Responsável Técnico</p>
+    </div>
+    <div class="btn-group">
+        <button class="btn-print" onclick="window.print()">IMPRIMIR RELATÓRIO</button>
+        <button class="btn-sec" onclick="exportDataManual()">EXPORTAR BACKUP</button>
+        <button class="btn-sec" onclick="importData()">IMPORTAR DADOS</button>
+    </div>
+</div>
+<script>
+    let chart;
+    const formatNumber = (n) => n.toLocaleString('pt-BR');
+    const formatMoeda = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(() => console.log("PWA Registrado"));
+    }
+
+    function setup() {
+        ['hSus', 'hSesc'].forEach(id => {
+            let row = '<tr>';
+            for(let d=1; d<=31; d++) row += `<th>${d < 10 ? '0'+d : d}</th>`;
+            document.getElementById(id).innerHTML = row + '</tr>';
+        });
+        ['bSus', 'bSesc'].forEach(id => {
+            let row = '<tr>';
+            for(let d=1; d<=31; d++) {
+                const cls = id === 'bSus' ? 'in-sus' : 'in-sesc';
+                row += `<td><input type="number" class="${cls}" value="0" oninput="recalc()"></td>`;
+            }
+            document.getElementById(id).innerHTML = row + '</tr>';
+        });
+        const agora = new Date();
+        document.getElementById('mesReferencia').value = agora.toISOString().substring(0, 7);
+        initChart();
+        verificarViradaDeMes();
+        atualizarTitulo();
+        loadData();
+    }
+
+    function initChart() {
+        chart = new Chart(document.getElementById('graficoBarras'), {
+            type: 'bar',
+            data: { labels: ['SUS', 'SESC'], datasets: [{ data: [0, 0], backgroundColor: ['#1b5e20', '#0d47a1'] }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+        });
+    }
+
+    function mudarMes() { atualizarTitulo(); loadData(); }
+
+    function verificarViradaDeMes() {
+        const agora = new Date();
+        const mesAtual = agora.toISOString().substring(0, 7);
+        const ultimoMesSalvo = localStorage.getItem('ultimo_mes_processado');
+        if (ultimoMesSalvo && ultimoMesSalvo !== mesAtual) {
+            const dadosAntigos = localStorage.getItem('prod_' + ultimoMesSalvo);
+            if(dadosAntigos) exportDataManual(`Backup_Automatico_${ultimoMesSalvo}`, dadosAntigos);
+            alert(`Virada de mês! Backup de ${ultimoMesSalvo} realizado.`);
+        }
+        localStorage.setItem('ultimo_mes_processado', mesAtual);
+    }
+
+    function recalc() {
+        let sus = 0, sesc = 0;
+        const valsSus = [], valsSesc = [];
+        document.querySelectorAll('.in-sus').forEach(i => { const v = Number(i.value) || 0; sus += v; valsSus.push(v); });
+        document.querySelectorAll('.in-sesc').forEach(i => { const v = Number(i.value) || 0; sesc += v; valsSesc.push(v); });
+        document.getElementById('txtSus').innerText = formatNumber(sus);
+        document.getElementById('txtSesc').innerText = formatNumber(sesc);
+        document.getElementById('txtSoma').innerText = formatNumber(sus + sesc);
+        document.getElementById('txtFinal').innerText = formatMoeda((sus + sesc) * 0.8 + 150);
+        chart.data.datasets[0].data = [sus, sesc];
+        chart.update();
+        const mesChave = document.getElementById('mesReferencia').value;
+        localStorage.setItem('prod_' + mesChave, JSON.stringify({ sus: valsSus, sesc: valsSesc }));
+    }
+
+    function loadData() {
+        const mesChave = document.getElementById('mesReferencia').value;
+        const salvo = JSON.parse(localStorage.getItem('prod_' + mesChave));
+        document.querySelectorAll('.in-sus').forEach((i, idx) => i.value = salvo ? (salvo.sus[idx] || 0) : 0);
+        document.querySelectorAll('.in-sesc').forEach((i, idx) => i.value = salvo ? (salvo.sesc[idx] || 0) : 0);
+        recalc();
+    }
+
+    function exportDataManual(nomeArquivo, dadosOverride) {
+        const mes = document.getElementById('mesReferencia').value;
+        const dados = dadosOverride || localStorage.getItem('prod_' + mes);
+        if(!dados) return;
+        const blob = new Blob([dados], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = (nomeArquivo || `Producao_${mes}`) + ".json";
+        a.click();
+    }
+
+    function importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = f => {
+                localStorage.setItem('prod_' + document.getElementById('mesReferencia').value, f.target.result);
+                loadData();
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+
+    function atualizarTitulo() {
+        const dataInput = document.getElementById('mesReferencia').value;
+        if(!dataInput) return;
+        const [ano, mes] = dataInput.split('-');
+        const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+        const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+        document.getElementById('txt-mes-ref').innerText = `Mês de Referência: ${cap(meses[parseInt(mes)-1])} de ${ano}`;
+        const hoje = new Date();
+        document.getElementById('dataAtual').innerText = `João Pessoa, ${hoje.getDate()} de ${cap(meses[hoje.getMonth()])} de ${hoje.getFullYear()}`;
+    }
+    setup();
+</script>
+</body>
+</html>
