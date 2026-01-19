@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Laboratorial - Marcos Pontes</title>
+    <title>LabFlow Pontes - Gestão Laboratorial</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0575E6">
@@ -15,81 +15,82 @@
         :root { --primary-gradient: linear-gradient(135deg, #a8e063, #0575E6); --sus-color: #1b5e20; --sesc-color: #0d47a1; --alert-color: #c62828; }
         
         body { font-family: 'Inter', sans-serif; background: var(--primary-gradient); background-attachment: fixed; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        
-        .container { background: #ffffff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 1050px; box-sizing: border-box; }
+        .container { background: #ffffff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 1100px; box-sizing: border-box; }
         
         .no-print h1 { color: #1a237e; text-align: center; margin-bottom: 15px; }
         .mes-seletor { text-align: center; margin-bottom: 25px; }
-        
-        input[type="month"] { 
-            padding: 10px 20px; border-radius: 12px; border: 2px solid var(--sus-color); 
-            font-weight: bold; color: var(--sus-color); background-color: #f0fdf4; 
-            outline: none; cursor: pointer; font-size: 1.2rem;
-            text-transform: capitalize; 
-        }
+        input[type="month"] { padding: 10px 20px; border-radius: 12px; border: 2px solid var(--sus-color); font-weight: bold; color: var(--sus-color); background-color: #f0fdf4; cursor: pointer; text-transform: capitalize; }
 
         .label-tabela { font-weight: bold; font-size: 1.1rem; margin: 15px 0 5px 0; display: block; }
-        .wrapper-tabela { width: 100%; margin-bottom: 15px; overflow-x: auto; }
+        .wrapper-tabela { width: 100%; margin-bottom: 15px; }
         
         table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1px solid #333; }
         th, td { border: 1px solid #333; text-align: center; padding: 4px 0; font-size: 11px; font-family: 'Arial Narrow', sans-serif; }
         th { background: #f0f0f0; }
 
-        input[type="number"] { 
-            width: 100%; border: none; text-align: center; font-size: 12px; outline: none; 
-            background: transparent; padding: 4px 0; -moz-appearance: textfield; font-family: 'Arial Narrow', sans-serif;
-        }
+        input[type="number"] { width: 100%; border: none; text-align: center; font-size: 12px; outline: none; background: transparent; font-family: 'Arial Narrow', sans-serif; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-        .summary-panel { background: #f8f9fa; padding: 15px; border-radius: 15px; border: 2px solid var(--sesc-color); margin-top: 10px; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .row-calc { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1rem; border-bottom: 1px solid #eee; }
-        .val-num { font-weight: 700; font-family: 'Courier New', monospace; color: #333; }
+        .summary-panel { background: #f8f9fa; padding: 15px; border-radius: 15px; border: 2px solid var(--sesc-color); margin: 20px auto; max-width: 450px; }
+        .row-calc { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px solid #eee; }
+        .val-num { font-weight: 700; }
         .total-final { font-size: 1.4rem; font-weight: bold; color: var(--sesc-color) !important; border-top: 2px dashed var(--sesc-color); padding-top: 8px; }
 
         .chart-box { max-width: 500px; margin: 15px auto; height: 130px; }
 
-        .btn-group { display: flex; gap: 8px; margin-top: 20px; justify-content: center; flex-wrap: wrap; }
-        .btn-print { padding: 12px 30px; background: #1a237e; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        .btn-sec { padding: 10px 15px; background: #454d55; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
-        .btn-danger { background: var(--alert-color); }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; justify-content: center; }
+        .btn-print { padding: 12px 30px; background: #1a237e; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-sec { padding: 10px 15px; background: #454d55; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.8rem; }
+        .btn-danger { background: var(--alert-color) !important; }
 
         .report-header, .footer-print { display: none; }
 
-        /* --- CORREÇÃO FINAL DE IMPRESSÃO --- */
         @media print {
-            @page { size: A4 portrait; margin: 0.5cm; }
-            body { background: white; padding: 0; display: block; }
-            
-            /* Força o container a ocupar a largura da página sem sobras */
-            .container { 
-                box-shadow: none; 
-                width: 100% !important; 
-                max-width: 100% !important; 
-                padding: 0 !important; 
-                margin: 0 !important;
-                border: none; 
-            }
-            
+            @page { size: A4 portrait; margin: 0; }
+            body { background: white; padding: 0; }
             .no-print, .btn-group, .mes-seletor { display: none !important; }
             
-            .report-header { display: block; text-align: center; margin-top: 10px; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px; }
-            .report-header h1 { font-size: 16pt; margin: 0; }
+            .container { 
+                box-shadow: none; padding: 0 !important; border: none; 
+                transform: scale(0.95); transform-origin: top center; 
+                width: 100% !important; margin: 0 auto !important;
+            }
             
-            .label-tabela { font-size: 9pt; margin-top: 5px; color: black !important; }
+            /* TOPO AJUSTADO: margin-top controla a descida */
+            .report-header { 
+                display: block; text-align: center; 
+                border-bottom: 1.5px solid #000; 
+                padding-bottom: 10px; 
+                margin-top: 80px; 
+                margin-bottom: 30px; 
+            }
+            .report-header h1 { font-size: 22pt; margin: 0; font-weight: bold; }
+            .report-header h2 { font-size: 15pt; margin: 5px 0; font-weight: normal; }
+            .report-header h3 { font-size: 13pt; margin: 5px 0; font-weight: normal; }
             
-            /* Tabela travada para não vazar da folha */
-            table { font-size: 7pt; width: 100% !important; border: 0.5pt solid #000; table-layout: fixed; }
-            th, td { padding: 1px 0 !important; border: 0.3pt solid #000; overflow: hidden; }
+            .label-tabela { font-size: 10pt; color: black !important; margin-top: 15px; font-weight: bold; }
+            table { font-size: 8pt; width: 100% !important; border: 0.5pt solid #000; }
             
-            .summary-panel { padding: 5px; border: 1pt solid #000; margin-top: 10px; width: 250px !important; margin-left: auto; box-sizing: border-box; }
-            .total-final { font-size: 10pt; border-top: 1pt solid #000; }
+            .summary-panel { margin: 20px auto !important; width: 350px !important; border: 1pt solid #000; background: white !important; }
             
-            .chart-box { width: 400px !important; height: 90px !important; margin: 10px auto; page-break-inside: avoid; }
+            /* Gráfico na impressão calibrado */
+            .chart-box { display: block !important; width: 400px; height: 110px; margin: 10px auto; }
+
+            .footer-print { display: block; text-align: center; margin-top: 40px; }
+            .data-extenso { font-size: 10pt; margin-bottom: 40px; }
+            .assinatura-linha { width: 250px; border-top: 1pt solid #000; margin: 0 auto 5px auto; }
             
-            .footer-print { display: block; text-align: center; margin-top: 30px; page-break-inside: avoid; }
-            .data-extenso { font-size: 9pt; margin-bottom: 30px; }
-            .assinatura-linha { width: 200px; border-top: 0.8pt solid #000; margin: 0 auto 5px auto; }
-            .assinatura-nome { font-size: 10pt; font-weight: 700; margin: 0; }
+            /* DISTANCIAMENTO DA ASSINATURA: Aumente margin-bottom para afastar */
+            .assinatura-nome { 
+                font-size: 11pt; 
+                font-weight: bold; 
+                text-transform: uppercase; 
+                margin-bottom: 2px; 
+            }
+            .assinatura-cargo {
+                font-size: 9.5pt;
+                margin-top: 0;
+            }
         }
     </style>
 </head>
@@ -100,16 +101,17 @@
         <h2>Fechamento de Produção Mensal</h2>
         <h3 id="txt-mes-ref">Mês de Referência: ---</h3>
     </div>
+
     <div class="no-print">
         <h1>Produção Mensal</h1>
         <div class="mes-seletor"><input type="month" id="mesReferencia" onchange="mudarMes()"></div>
     </div>
     
     <span class="label-tabela" style="color: var(--sus-color);">Laudos SUS</span>
-    <div class="wrapper-tabela"><table id="tblSus"><thead id="hSus"></thead><tbody id="bSus"></tbody></table></div>
+    <div class="wrapper-tabela"><table><thead id="hSus"></thead><tbody id="bSus"></tbody></table></div>
     
     <span class="label-tabela" style="color: var(--sesc-color);">Laudos SESC</span>
-    <div class="wrapper-tabela"><table id="tblSesc"><thead id="hSesc"></thead><tbody id="bSesc"></tbody></table></div>
+    <div class="wrapper-tabela"><table><thead id="hSesc"></thead><tbody id="bSesc"></tbody></table></div>
     
     <div class="summary-panel">
         <div class="row-calc"><span>Total SUS:</span> <span id="txtSus" class="val-num">0</span></div>
@@ -117,13 +119,16 @@
         <div class="row-calc"><span>Soma Total (Qtd):</span> <span id="txtSoma" class="val-num">0</span></div>
         <div class="row-calc total-final"><span>VALOR TOTAL:</span> <span id="txtFinal" class="val-num">R$ 0,00</span></div>
     </div>
+
     <div class="chart-box"><canvas id="graficoBarras"></canvas></div>
+
     <div class="footer-print">
         <div id="dataAtual" class="data-extenso">---</div>
         <div class="assinatura-linha"></div>
         <p class="assinatura-nome">MARCOS PONTES</p>
         <p class="assinatura-cargo">Responsável Técnico</p>
     </div>
+
     <div class="btn-group">
         <button class="btn-print" onclick="window.print()">IMPRIMIR RELATÓRIO</button>
         <button class="btn-sec" onclick="exportDataManual()">EXPORTAR BACKUP</button>
@@ -136,9 +141,7 @@
     const formatNumber = (n) => n.toLocaleString('pt-BR');
     const formatMoeda = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(() => console.log("PWA Ativado"));
-    }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
     function setup() {
         ['hSus', 'hSesc'].forEach(id => {
@@ -178,8 +181,7 @@
         const ultimoMesSalvo = localStorage.getItem('ultimo_mes_processado');
         if (ultimoMesSalvo && ultimoMesSalvo !== mesAtual) {
             const dadosAntigos = localStorage.getItem('prod_' + ultimoMesSalvo);
-            if(dadosAntigos) exportDataManual(`Backup_Mensal_Auto_${ultimoMesSalvo}`, dadosAntigos);
-            alert(`Novo mês! Backup de ${ultimoMesSalvo} baixado.`);
+            if(dadosAntigos) exportDataManual(`Backup_Auto_${ultimoMesSalvo}`, dadosAntigos);
         }
         localStorage.setItem('ultimo_mes_processado', mesAtual);
     }
@@ -195,35 +197,31 @@
         document.getElementById('txtFinal').innerText = formatMoeda((sus + sesc) * 0.8 + 150);
         chart.data.datasets[0].data = [sus, sesc];
         chart.update();
-        const mesChave = document.getElementById('mesReferencia').value;
-        localStorage.setItem('prod_' + mesChave, JSON.stringify({ sus: valsSus, sesc: valsSesc }));
+        localStorage.setItem('prod_' + document.getElementById('mesReferencia').value, JSON.stringify({ sus: valsSus, sesc: valsSesc }));
     }
 
     function loadData() {
-        const mesChave = document.getElementById('mesReferencia').value;
-        const salvo = JSON.parse(localStorage.getItem('prod_' + mesChave));
+        const salvo = JSON.parse(localStorage.getItem('prod_' + document.getElementById('mesReferencia').value));
         document.querySelectorAll('.in-sus').forEach((i, idx) => i.value = salvo ? (salvo.sus[idx] || 0) : 0);
         document.querySelectorAll('.in-sesc').forEach((i, idx) => i.value = salvo ? (salvo.sesc[idx] || 0) : 0);
         recalc();
     }
 
     function limparFormulario() {
-        const mes = document.getElementById('mesReferencia').value;
-        if (confirm("O sistema baixará um backup antes de limpar os campos digitados. Confirmar?")) {
-            exportDataManual(`Backup_Pre_Limpeza_${mes}`);
+        if (confirm("O sistema baixará um backup antes de limpar os campos. Confirmar?")) {
+            exportDataManual(`Backup_Limpeza_${document.getElementById('mesReferencia').value}`);
             document.querySelectorAll('input[type="number"]').forEach(i => i.value = 0);
             recalc();
         }
     }
 
     function exportDataManual(nomeArquivo, dadosOverride) {
-        const mes = document.getElementById('mesReferencia').value;
-        const dados = dadosOverride || localStorage.getItem('prod_' + mes);
+        const dados = dadosOverride || localStorage.getItem('prod_' + document.getElementById('mesReferencia').value);
         if(!dados) return;
         const blob = new Blob([dados], { type: 'application/json' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = (nomeArquivo || `Producao_${mes}`) + ".json";
+        a.download = (nomeArquivo || `Producao_${document.getElementById('mesReferencia').value}`) + ".json";
         a.click();
     }
 
