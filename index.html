@@ -115,8 +115,13 @@ cursor:pointer;
 @media print{
 
 @page{
-size:A4 landscape;
-margin:1cm;
+size: landscape;
+margin: 1cm;
+}
+
+html,body{
+width:297mm;
+height:210mm;
 }
 
 body{
@@ -125,10 +130,20 @@ background:white!important;
 print-color-adjust:exact;
 }
 
-.no-print,.btn-group{display:none!important}
+.no-print,.btn-group{
+display:none!important;
+}
+
+.container{
+box-shadow:none!important;
+padding:0!important;
+border:none!important;
+max-width:100%!important;
+margin:0!important;
+}
 
 .report-header{
-display:block;
+display:block!important;
 text-align:center;
 border-bottom:1px solid #000;
 padding-bottom:10px;
@@ -136,10 +151,10 @@ margin-bottom:20px;
 }
 
 .footer-print{
-display:flex;
+display:flex!important;
 flex-direction:column;
 align-items:center;
-margin-top:50px;
+margin-top:40px;
 }
 
 .assinatura-linha{
@@ -149,6 +164,8 @@ margin:20px 0 5px;
 }
 
 }
+
+/* ===================================== */
 
 </style>
 </head>
