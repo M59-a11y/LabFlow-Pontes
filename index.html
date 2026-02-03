@@ -6,10 +6,8 @@
 
 <title>Marcos Pontes - Gestão Laboratorial</title>
 
-<!-- FAVICON -->
 <link rel="icon" type="image/jpeg" href="Logo Marcos.jpeg">
 <link rel="apple-touch-icon" href="Logo Marcos.jpeg">
-
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0575E6">
 
@@ -34,6 +32,14 @@ margin:0;
 padding:20px;
 display:flex;
 justify-content:center;
+}
+
+.logo-topo{
+position:absolute;
+top:20px;
+left:20px;
+height:70px;
+z-index:10;
 }
 
 .container{
@@ -110,14 +116,11 @@ cursor:pointer;
 
 .report-header,.footer-print{display:none}
 
-/* ================= PRINT ================= */
-
 @media print{
 
-@page{
-size: landscape;
-margin: 1cm;
-}
+.logo-topo{height:60px}
+
+@page{size: landscape;margin:1cm;}
 
 html,body{
 width:297mm;
@@ -130,9 +133,7 @@ background:white!important;
 print-color-adjust:exact;
 }
 
-.no-print,.btn-group{
-display:none!important;
-}
+.no-print,.btn-group{display:none!important}
 
 .container{
 box-shadow:none!important;
@@ -162,15 +163,14 @@ width:250px;
 border-top:1px solid #000;
 margin:20px 0 5px;
 }
-
 }
-
-/* ===================================== */
 
 </style>
 </head>
 
 <body>
+
+<img src="logo.png" class="logo-topo">
 
 <div class="container">
 
@@ -298,4 +298,3 @@ setup();
 
 </body>
 </html>
-
