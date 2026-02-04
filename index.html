@@ -256,7 +256,9 @@ document.querySelectorAll('.sesc').forEach(i=>e+=+i.value||0);
 txtSus.innerText=s;
 txtSesc.innerText=e;
 txtSoma.innerText=s+e;
-txtFinal.innerText=((s+e)*0.8+150).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+/* ALTERADO PARA 1.00 */
+txtFinal.innerText=((s+e)*1+150).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 
 chart.data.datasets[0].data=[s,e];
 chart.update();
