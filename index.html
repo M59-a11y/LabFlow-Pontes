@@ -1,1 +1,355 @@
-<!DOCTYPE html> <html lang="pt-br"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Marcos Pontes - Gestão Laboratorial</title> <link rel="icon" type="image/jpeg" href="Logo Marcos.jpeg"> <link rel="apple-touch-icon" href="Logo Marcos.jpeg"> <link rel="manifest" href="manifest.json"> <meta name="theme-color" content="#0575E6"> <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script> <style> @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap'); :root{ --primary-gradient:linear-gradient(135deg,#a8e063,#0575E6); --sus-color:#1b5e20; --sesc-color:#0d47a1; --alert-color:#c62828; } body{ font-family:Inter,system-ui,sans-serif; background:var(--primary-gradient); background-attachment:fixed; margin:0; padding:20px; display:flex; justify-content:center; } .logo-topo{ position:absolute; top:20px; left:20px; height:70px; z-index:10; } .container{ background:#fff; padding:30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.2); width:100%; max-width:1100px; } h1{text-align:center;color:#1a237e} input[type="month"]{ padding:10px 20px; border-radius:12px; border:2px solid var(--sus-color); font-weight:bold; background:#f0fdf4; } .label-tabela{font-weight:bold;margin:15px 0 5px;display:block} table{ width:100%; border-collapse:collapse; border:1px solid #333; } th,td{ border:1px solid #333; font-size:11px; text-align:center; } input[type="number"]{ width:100%; border:none; background:transparent; text-align:center; } .summary-panel{ background:#f8f9fa; padding:15px; border-radius:15px; border:2px solid var(--sesc-color); margin:20px auto; max-width:450px; } .row-calc{display:flex;justify-content:space-between} .total-final{ font-size:1.4rem; font-weight:bold; color:var(--sesc-color) } .chart-box{max-width:500px;margin:15px auto;height:130px} .btn-group{display:flex;gap:10px;justify-content:center} button{ padding:10px 20px; border-radius:10px; border:none; color:white; background:#1a237e; cursor:pointer; } .btn-danger{background:#c62828} .report-header,.footer-print{display:none} @media print{ .logo-topo{height:60px} @page{size: landscape;margin:1cm;} html,body{ width:297mm; height:210mm; } body{ background:white!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; } .no-print,.btn-group{display:none!important} .container{ box-shadow:none!important; padding:0!important; border:none!important; max-width:100%!important; margin:0!important; } .report-header{ display:block!important; text-align:center; border-bottom:1px solid #000; padding-bottom:10px; margin-bottom:20px; } .footer-print{ display:flex!important; flex-direction:column; align-items:center; margin-top:40px; } .assinatura-linha{ width:250px; border-top:1px solid #000; margin:20px 0 5px; } } </style> </head> <body> <img src="logo.png" class="logo-topo"> <div class="container"> <div class="report-header"> <h1>GESTÃO LABORATORIAL</h1> <h2>Fechamento Mensal</h2> <h3 id="txt-mes-ref"></h3> </div> <div class="no-print"> <h1>Produção Mensal</h1> <input type="month" id="mesReferencia"> </div> <span class="label-tabela">SUS</span> <table><thead id="hSus"></thead><tbody id="bSus"></tbody></table> <span class="label-tabela">SESC</span> <table><thead id="hSesc"></thead><tbody id="bSesc"></tbody></table> <div class="summary-panel"> <div class="row-calc">SUS <span id="txtSus">0</span></div> <div class="row-calc">SESC <span id="txtSesc">0</span></div> <div class="row-calc">TOTAL <span id="txtSoma">0</span></div> <div class="row-calc total-final">VALOR <span id="txtFinal">R$0</span></div> </div> <div class="chart-box"><canvas id="graficoBarras"></canvas></div> <div class="footer-print"> <div id="dataAtual"></div> <div class="assinatura-linha"></div> <strong>MARCOS PONTES</strong> Responsável Técnico </div> <div class="btn-group"> <button onclick="window.print()">IMPRIMIR</button> <button onclick="exportData()">EXPORTAR</button> <button class="btn-danger" onclick="limpar()">LIMPAR</button> </div> </div> <script> let chart; function setup(){ ['hSus','hSesc'].forEach(id=>{ let r='<tr>'; for(let i=1;i<=31;i++)r+=<th>${i}</th>; document.getElementById(id).innerHTML=r+'</tr>'; }); ['bSus','bSesc'].forEach(id=>{ let r='<tr>'; for(let i=1;i<=31;i++) r+=<td><input type=number value=0 class="${id=='bSus'?'sus':'sesc'}" oninput="recalc()"></td>; document.getElementById(id).innerHTML=r+'</tr>'; }); mesReferencia.value=new Date().toISOString().slice(0,7); chart=new Chart(graficoBarras,{ type:'bar', data:{labels:['SUS','SESC'],datasets:[{data:[0,0]}]}, options:{indexAxis:'y',plugins:{legend:{display:false}}} }); load(); } function recalc(){ let s=0,e=0; document.querySelectorAll('.sus').forEach(i=>s+=+i.value||0); document.querySelectorAll('.sesc').forEach(i=>e+=+i.value||0); txtSus.innerText=s; txtSesc.innerText=e; txtSoma.innerText=s+e; txtFinal.innerText=((s+e)*0.8+150).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); chart.data.datasets[0].data=[s,e]; chart.update(); localStorage.setItem(mesReferencia.value,JSON.stringify({s,e})); } function load(){ const d=JSON.parse(localStorage.getItem(mesReferencia.value)); if(!d)return; document.querySelectorAll('.sus').forEach(i=>i.value=d.s||0); document.querySelectorAll('.sesc').forEach(i=>i.value=d.e||0); recalc(); } function limpar(){ document.querySelectorAll('input[type=number]').forEach(i=>i.value=0); recalc(); } function exportData(){ const b=new Blob([localStorage.getItem(mesReferencia.value)]); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='backup.json'; a.click(); } mesReferencia.onchange=load; setup(); </script> </body> </html>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marcos Pontes - Gestão Laboratorial</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0575E6">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    :root {
+      --primary-gradient: linear-gradient(135deg, #a8e063, #0575E6);
+      --sus-color: #1b5e20;
+      --sesc-color: #0d47a1;
+      --alert-color: #c62828;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--primary-gradient);
+      background-attachment: fixed;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .logo-topo {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      height: 70px;
+      z-index: 10;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+      width: 100%;
+      max-width: 1200px;
+    }
+    h1 { text-align: center; color: #1a237e; }
+    input[type="month"] {
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: 2px solid var(--sus-color);
+      font-weight: bold;
+      background: #f0fdf4;
+      display: block;
+      margin: 0 auto 20px;
+    }
+    .label-tabela {
+      font-weight: bold;
+      margin: 15px 0 5px;
+      display: block;
+      font-size: 14px;
+    }
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    table {
+      width: 100%;
+      min-width: 700px;
+      border-collapse: collapse;
+      border: 1px solid #333;
+    }
+    th, td {
+      border: 1px solid #333;
+      font-size: 11px;
+      text-align: center;
+      padding: 2px;
+    }
+    th {
+      background: #e8eaf6;
+      font-weight: 600;
+      padding: 4px 2px;
+    }
+    th.sus-header { background: #c8e6c9; color: var(--sus-color); }
+    th.sesc-header { background: #bbdefb; color: var(--sesc-color); }
+    input[type="number"] {
+      width: 100%;
+      min-width: 30px;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-size: 11px;
+      padding: 4px 0;
+      -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type="number"]:focus {
+      outline: 2px solid #0575E6;
+      border-radius: 3px;
+      background: #e3f2fd;
+    }
+    .summary-panel {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 15px;
+      border: 2px solid var(--sesc-color);
+      margin: 20px auto;
+      max-width: 450px;
+    }
+    .row-calc {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+    .total-final {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--sesc-color);
+      border-top: 2px solid var(--sesc-color);
+      margin-top: 8px;
+      padding-top: 8px;
+    }
+    .chart-box { max-width: 500px; margin: 15px auto; height: 130px; }
+    .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+    button {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      color: white;
+      background: #1a237e;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+    }
+    button:hover { opacity: 0.85; }
+    .btn-danger { background: #c62828; }
+
+    .report-header, .footer-print { display: none; }
+
+    @media print {
+      .logo-topo { height: 60px; }
+      @page { size: landscape; margin: 1cm; }
+      html, body { width: 297mm; }
+      body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0; }
+      .no-print, .btn-group { display: none !important; }
+      .container { box-shadow: none !important; padding: 0 !important; border: none !important; max-width: 100% !important; margin: 0 !important; }
+      .report-header { display: block !important; text-align: center; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+      .footer-print { display: flex !important; flex-direction: column; align-items: center; margin-top: 40px; }
+      .assinatura-linha { width: 250px; border-top: 1px solid #000; margin: 20px 0 5px; }
+    }
+  </style>
+</head>
+<body>
+  <img src="logo.png" class="logo-topo" onerror="this.style.display='none'">
+  <div class="container">
+
+    <div class="report-header">
+      <h1>GESTÃO LABORATORIAL</h1>
+      <h2>Fechamento Mensal</h2>
+      <h3 id="txt-mes-ref"></h3>
+    </div>
+
+    <div class="no-print">
+      <h1>Produção Mensal</h1>
+      <input type="month" id="mesReferencia">
+    </div>
+
+    <span class="label-tabela">🟢 SUS</span>
+    <div class="table-wrapper">
+      <table>
+        <thead id="hSus"></thead>
+        <tbody id="bSus"></tbody>
+      </table>
+    </div>
+
+    <span class="label-tabela" style="margin-top:20px">🔵 SESC</span>
+    <div class="table-wrapper">
+      <table>
+        <thead id="hSesc"></thead>
+        <tbody id="bSesc"></tbody>
+      </table>
+    </div>
+
+    <div class="summary-panel">
+      <div class="row-calc"><span>SUS</span> <span id="txtSus">0</span></div>
+      <div class="row-calc"><span>SESC</span> <span id="txtSesc">0</span></div>
+      <div class="row-calc"><span>TOTAL</span> <span id="txtSoma">0</span></div>
+      <div class="row-calc total-final"><span>VALOR</span> <span id="txtFinal">R$&nbsp;0,00</span></div>
+    </div>
+
+    <div class="chart-box"><canvas id="graficoBarras"></canvas></div>
+
+    <div class="footer-print">
+      <div id="dataAtual"></div>
+      <div class="assinatura-linha"></div>
+      <strong>MARCOS PONTES</strong>
+      <span>Responsável Técnico</span>
+    </div>
+
+    <div class="btn-group">
+      <button onclick="window.print()">🖨️ IMPRIMIR</button>
+      <button onclick="exportData()">📥 EXPORTAR</button>
+      <button class="btn-danger" onclick="limpar()">🗑️ LIMPAR</button>
+    </div>
+  </div>
+
+  <script>
+    let chart;
+
+    function getDaysInMonth(yearMonth) {
+      const [y, m] = yearMonth.split('-').map(Number);
+      return new Date(y, m, 0).getDate();
+    }
+
+    function buildTable(headerId, bodyId, prefix) {
+      const mes = document.getElementById('mesReferencia').value || new Date().toISOString().slice(0, 7);
+      const days = getDaysInMonth(mes);
+      const isSus = prefix === 'sus';
+
+      // Header
+      let hRow = '<tr>';
+      for (let i = 1; i <= days; i++) {
+        hRow += `<th class="${isSus ? 'sus-header' : 'sesc-header'}">${i}</th>`;
+      }
+      hRow += '</tr>';
+      document.getElementById(headerId).innerHTML = hRow;
+
+      // Body
+      let bRow = '<tr>';
+      for (let i = 1; i <= days; i++) {
+        bRow += `<td><input type="number" min="0" value="0" class="${prefix}" data-day="${i}" oninput="recalc()"></td>`;
+      }
+      bRow += '</tr>';
+      document.getElementById(bodyId).innerHTML = bRow;
+    }
+
+    function setup() {
+      const mesInput = document.getElementById('mesReferencia');
+      mesInput.value = new Date().toISOString().slice(0, 7);
+
+      buildTable('hSus', 'bSus', 'sus');
+      buildTable('hSesc', 'bSesc', 'sesc');
+
+      const ctx = document.getElementById('graficoBarras').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['SUS', 'SESC'],
+          datasets: [{
+            data: [0, 0],
+            backgroundColor: ['#2e7d32', '#1565c0'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      });
+
+      mesInput.addEventListener('change', () => {
+        buildTable('hSus', 'bSus', 'sus');
+        buildTable('hSesc', 'bSesc', 'sesc');
+        load();
+      });
+
+      load();
+      document.getElementById('dataAtual').textContent =
+        new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+    }
+
+    function recalc() {
+      let s = 0, e = 0;
+      document.querySelectorAll('.sus').forEach(i => s += +i.value || 0);
+      document.querySelectorAll('.sesc').forEach(i => e += +i.value || 0);
+
+      document.getElementById('txtSus').textContent = s;
+      document.getElementById('txtSesc').textContent = e;
+      document.getElementById('txtSoma').textContent = s + e;
+      document.getElementById('txtFinal').textContent =
+        ((s + e) * 0.8 + 150).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+      if (chart) {
+        chart.data.datasets[0].data = [s, e];
+        chart.update();
+      }
+
+      save();
+    }
+
+    function getValues(cls) {
+      const vals = {};
+      document.querySelectorAll('.' + cls).forEach(i => {
+        vals[i.dataset.day] = +i.value || 0;
+      });
+      return vals;
+    }
+
+    function save() {
+      const mes = document.getElementById('mesReferencia').value;
+      if (!mes) return;
+      const data = {
+        sus: getValues('sus'),
+        sesc: getValues('sesc')
+      };
+      localStorage.setItem('lab_' + mes, JSON.stringify(data));
+    }
+
+    function load() {
+      const mes = document.getElementById('mesReferencia').value;
+      if (!mes) return;
+
+      // Update report header
+      document.getElementById('txt-mes-ref').textContent =
+        new Date(mes + '-02').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
+
+      const raw = localStorage.getItem('lab_' + mes);
+      if (!raw) { recalc(); return; }
+
+      try {
+        const data = JSON.parse(raw);
+        document.querySelectorAll('.sus').forEach(i => {
+          i.value = data.sus?.[i.dataset.day] ?? 0;
+        });
+        document.querySelectorAll('.sesc').forEach(i => {
+          i.value = data.sesc?.[i.dataset.day] ?? 0;
+        });
+      } catch(e) { console.warn('Erro ao carregar dados:', e); }
+
+      recalc();
+    }
+
+    function limpar() {
+      if (!confirm('Limpar todos os dados do mês atual?')) return;
+      document.querySelectorAll('input[type="number"]').forEach(i => i.value = 0);
+      recalc();
+    }
+
+    function exportData() {
+      const mes = document.getElementById('mesReferencia').value;
+      const dados = localStorage.getItem('lab_' + mes);
+      if (!dados) { alert('Nenhum dado para exportar.'); return; }
+      const b = new Blob([dados], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = `laboratorio_${mes}.json`;
+      a.click();
+    }
+
+    // Init after Chart.js loads
+    window.addEventListener('load', setup);
+  </script>
+</body>
+</html>
