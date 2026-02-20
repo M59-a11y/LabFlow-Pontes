@@ -142,9 +142,22 @@
       body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0; }
       .no-print, .btn-group { display: none !important; }
       .container { box-shadow: none !important; padding: 0 !important; border: none !important; max-width: 100% !important; margin: 0 !important; }
-      .report-header { display: block !important; text-align: center; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-      .footer-print { display: flex !important; flex-direction: column; align-items: center; margin-top: 40px; }
-      .assinatura-linha { width: 250px; border-top: 1px solid #000; margin: 20px 0 5px; }
+      .report-header { display: block !important; text-align: center; border-bottom: 1px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
+      .report-header h1 { margin: 4px 0; font-size: 16px; }
+      .report-header h2 { margin: 2px 0; font-size: 13px; }
+      .report-header h3 { margin: 2px 0; font-size: 12px; }
+      .label-tabela { margin: 6px 0 2px; }
+      .summary-panel { margin: 8px auto; padding: 8px 15px; }
+      .chart-box { height: 80px; margin: 6px auto; }
+      .footer-print {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 10px;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .assinatura-linha { width: 250px; border-top: 1px solid #000; margin: 10px 0 4px; }
     }
   </style>
 </head>
