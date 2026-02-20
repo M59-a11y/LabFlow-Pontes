@@ -279,7 +279,7 @@
       document.getElementById('txtSesc').textContent = e;
       document.getElementById('txtSoma').textContent = s + e;
       document.getElementById('txtFinal').textContent =
-        ((s + e) * 1 + 150).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        ((s + e) * 1.0 + 150).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
       if (chart) {
         chart.data.datasets[0].data = [s, e];
@@ -353,4 +353,3 @@
   </script>
 </body>
 </html>
-
