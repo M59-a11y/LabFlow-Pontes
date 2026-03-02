@@ -405,7 +405,13 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Exportar
     </button>
-    <button class="btn-danger" onclick="limpar()">
+    
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importBackup(event)">
+    <button class="btn-export" onclick="document.getElementById('importFile').click()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Importar
+    </button>
+<button class="btn-danger" onclick="limpar()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
       Limpar
     </button>
@@ -418,7 +424,138 @@
   <script>
     let chart;
 
-    function getDaysInMonth(ym) {
+    
+
+    /* ===============================
+       BACKUP SEGURO (sem mudar layout)
+       - localStorage (rápido) + IndexedDB (robusto)
+       - Importar JSON para restaurar
+    =============================== */
+
+    const IDB_NAME = 'lab_backup_db';
+    const IDB_STORE = 'months';
+    const IDB_VER = 1;
+
+    function idbOpen(){
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(IDB_NAME, IDB_VER);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) {
+            db.createObjectStore(IDB_STORE, { keyPath: 'mes' });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function idbPut(mes, data){
+      try{
+        const db = await idbOpen();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).put({ mes, data, updatedAt: Date.now() });
+          tx.oncomplete = () => { db.close(); resolve(); };
+          tx.onerror = () => { const e = tx.error; db.close(); reject(e); };
+        });
+      }catch(e){
+        // Silencioso
+      }
+    }
+
+    async function idbGet(mes){
+      try{
+        const db = await idbOpen();
+        const res = await new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, 'readonly');
+          const req = tx.objectStore(IDB_STORE).get(mes);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => reject(req.error);
+        });
+        db.close();
+        return res;
+      }catch(e){
+        return null;
+      }
+    }
+
+    function isAllZero(obj){
+      if (!obj) return true;
+      const a = obj.sus || {};
+      const b = obj.sesc || {};
+      const hasNonZero = (o) => Object.values(o).some(v => (+v || 0) !== 0);
+      return !(hasNonZero(a) || hasNonZero(b));
+    }
+
+    function applyDataToInputs(d){
+      document.querySelectorAll('.sus').forEach(i => i.value = d?.sus?.[i.dataset.day] ?? 0);
+      document.querySelectorAll('.sesc').forEach(i => i.value = d?.sesc?.[i.dataset.day] ?? 0);
+      recalc();
+    }
+
+    async function tryRestoreFromIDB(mes, currentRaw){
+      const rec = await idbGet(mes);
+      if (!rec || !rec.data) return false;
+
+      let current = null;
+      if (currentRaw){
+        try{ current = JSON.parse(currentRaw); }catch(e){ current = null; }
+      }
+
+      const currentAllZero = isAllZero(current);
+      const idbAllZero = isAllZero(rec.data);
+
+      if ((!currentRaw || currentAllZero) && !idbAllZero){
+        const ok = confirm('Encontrei um backup mais completo para este mês. Deseja restaurar?');
+        if (ok){
+          localStorage.setItem('lab_'+mes, JSON.stringify(rec.data));
+          applyDataToInputs(rec.data);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function importBackup(ev){
+      const file = ev?.target?.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try{
+          const parsed = JSON.parse(reader.result);
+
+          const mesAtual = document.getElementById('mesReferencia').value;
+          const mes = (parsed.mes && typeof parsed.mes === 'string') ? parsed.mes : mesAtual;
+
+          if (!mes || !parsed.sus || !parsed.sesc){
+            alert('Arquivo inválido. Precisa conter "sus" e "sesc".');
+            return;
+          }
+
+          if (mes !== mesAtual){
+            document.getElementById('mesReferencia').value = mes;
+            buildTable('hSus','bSus','sus');
+            buildTable('hSesc','bSesc','sesc');
+          }
+
+          const data = { sus: parsed.sus, sesc: parsed.sesc };
+          localStorage.setItem('lab_'+mes, JSON.stringify(data));
+          await idbPut(mes, data);
+          applyDataToInputs(data);
+
+          alert('Backup importado com sucesso.');
+        }catch(e){
+          alert('Não foi possível importar este arquivo.');
+        }finally{
+          ev.target.value = '';
+        }
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+function getDaysInMonth(ym) {
       const [y, m] = ym.split('-').map(Number);
       return new Date(y, m, 0).getDate();
     }
@@ -507,7 +644,13 @@
     function save() {
       const mes = document.getElementById('mesReferencia').value;
       if (!mes) return;
-      localStorage.setItem('lab_'+mes, JSON.stringify({ sus: getValues('sus'), sesc: getValues('sesc') }));
+      const data = { sus: getValues('sus'), sesc: getValues('sesc') };
+
+      // 1) rápido (como antes)
+      localStorage.setItem('lab_'+mes, JSON.stringify(data));
+
+      // 2) robusto (backup do navegador)
+      idbPut(mes, data);
     }
 
     function load() {
@@ -516,15 +659,20 @@
       const label = new Date(mes+'-02').toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).toUpperCase();
       const sub = document.getElementById('printSubtitle');
       if (sub) sub.textContent = label;
+
       const raw = localStorage.getItem('lab_'+mes);
-      if (raw) {
-        try {
-          const d = JSON.parse(raw);
-          document.querySelectorAll('.sus').forEach(i => i.value = d.sus?.[i.dataset.day] ?? 0);
-          document.querySelectorAll('.sesc').forEach(i => i.value = d.sesc?.[i.dataset.day] ?? 0);
-        } catch(e) {}
-      }
-      recalc();
+
+      tryRestoreFromIDB(mes, raw).then(() => {
+        const raw2 = localStorage.getItem('lab_'+mes);
+        if (raw2) {
+          try {
+            const d = JSON.parse(raw2);
+            document.querySelectorAll('.sus').forEach(i => i.value = d.sus?.[i.dataset.day] ?? 0);
+            document.querySelectorAll('.sesc').forEach(i => i.value = d.sesc?.[i.dataset.day] ?? 0);
+          } catch(e) {}
+        }
+        recalc();
+      });
     }
 
     function limpar() {
