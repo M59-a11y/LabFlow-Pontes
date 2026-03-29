@@ -21,6 +21,7 @@
       --sus: #22c55e;
       --sesc: #3b82f6;
       --accent: #f59e0b;
+      --diversas: #f59e0b;
       --danger: #ef4444;
       --radius: 12px;
     }
@@ -91,6 +92,7 @@
     .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
     .dot-sus { background: var(--sus); box-shadow: 0 0 6px var(--sus); }
     .dot-sesc { background: var(--sesc); box-shadow: 0 0 6px var(--sesc); }
+    .dot-diversas { background: var(--diversas); box-shadow: 0 0 6px var(--diversas); }
     .section-label span { font-weight: 600; font-size: .78rem; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); }
 
     /* ── TABLE ── */
@@ -121,6 +123,8 @@
     input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
     input[type="number"]:focus { outline: none; background: rgba(59,130,246,.15); color: #93c5fd; }
     input.sus:focus { background: rgba(34,197,94,.12); color: #86efac; }
+    input.sesc:focus { background: rgba(59,130,246,.15); color: #93c5fd; }
+    input.diversas:focus { background: rgba(245,158,11,.15); color: #fcd34d; }
 
     /* ── BOTTOM GRID ── */
     .bottom-row {
@@ -236,6 +240,7 @@
       .dot { width: 7px; height: 7px; box-shadow: none !important; }
       .dot-sus { background: #16a34a !important; }
       .dot-sesc { background: #1d4ed8 !important; }
+      .dot-diversas { background: #d97706 !important; }
       .section-label span { font-size: 7px; color: #444; }
 
       /* tables */
@@ -249,6 +254,7 @@
       }
       th.sus-th { color: #15803d !important; }
       th.sesc-th { color: #1e40af !important; }
+      th.diversas-th { color: #b45309 !important; }
       tbody tr td { border-right: 1px solid #ddd; border-top: 1px solid #ddd; }
       input[type="number"] {
         color: #000 !important;
@@ -276,6 +282,7 @@
       .summary-row .val { color: #000 !important; }
       .val-sus { color: #15803d !important; }
       .val-sesc { color: #1e40af !important; }
+      .val-diversas { color: #b45309 !important; }
       .summary-final {
         background: #f0fdf4 !important;
         border: 1px solid #bbf7d0 !important;
@@ -358,6 +365,15 @@
       <table><thead id="hSesc"></thead><tbody id="bSesc"></tbody></table>
     </div>
 
+    <!-- DIGITAÇÃO DIVERSAS -->
+    <div class="section-label" style="margin-top:16px">
+      <div class="dot dot-diversas"></div>
+      <span>DIGITAÇÃO DIVERSAS</span>
+    </div>
+    <div class="table-wrapper">
+      <table><thead id="hDiversas"></thead><tbody id="bDiversas"></tbody></table>
+    </div>
+
     <!-- BOTTOM -->
     <div class="bottom-row">
       <div class="summary">
@@ -368,6 +384,10 @@
         <div class="summary-row">
           <span class="lbl">SESC</span>
           <span class="val val-sesc" id="txtSesc">0</span>
+        </div>
+        <div class="summary-row">
+          <span class="lbl">Digitação Diversas</span>
+          <span class="val val-diversas" id="txtDiversas">0</span>
         </div>
         <div class="summary-row">
           <span class="lbl">Total de Exames</span>
@@ -484,13 +504,15 @@
       if (!obj) return true;
       const a = obj.sus || {};
       const b = obj.sesc || {};
+      const c = obj.diversas || {};
       const hasNonZero = (o) => Object.values(o).some(v => (+v || 0) !== 0);
-      return !(hasNonZero(a) || hasNonZero(b));
+      return !(hasNonZero(a) || hasNonZero(b) || hasNonZero(c));
     }
 
     function applyDataToInputs(d){
       document.querySelectorAll('.sus').forEach(i => i.value = d?.sus?.[i.dataset.day] ?? 0);
       document.querySelectorAll('.sesc').forEach(i => i.value = d?.sesc?.[i.dataset.day] ?? 0);
+      document.querySelectorAll('.diversas').forEach(i => i.value = d?.diversas?.[i.dataset.day] ?? 0);
       recalc();
     }
 
@@ -538,9 +560,10 @@
             document.getElementById('mesReferencia').value = mes;
             buildTable('hSus','bSus','sus');
             buildTable('hSesc','bSesc','sesc');
+            buildTable('hDiversas','bDiversas','diversas');
           }
 
-          const data = { sus: parsed.sus, sesc: parsed.sesc };
+          const data = { sus: parsed.sus, sesc: parsed.sesc, diversas: parsed.diversas || {} };
           localStorage.setItem('lab_'+mes, JSON.stringify(data));
           await idbPut(mes, data);
           applyDataToInputs(data);
@@ -563,7 +586,7 @@ function getDaysInMonth(ym) {
     function buildTable(hId, bId, cls) {
       const ym = document.getElementById('mesReferencia').value || new Date().toISOString().slice(0,7);
       const days = getDaysInMonth(ym);
-      const thCls = cls === 'sus' ? 'sus-th' : 'sesc-th';
+      const thCls = cls === 'sus' ? 'sus-th' : cls === 'sesc' ? 'sesc-th' : 'diversas-th';
       let h = '<tr>', b = '<tr>';
       for (let i = 1; i <= days; i++) {
         h += `<th class="${thCls}">${i}</th>`;
@@ -578,15 +601,16 @@ function getDaysInMonth(ym) {
       inp.value = new Date().toISOString().slice(0,7);
       buildTable('hSus','bSus','sus');
       buildTable('hSesc','bSesc','sesc');
+      buildTable('hDiversas','bDiversas','diversas');
 
       chart = new Chart(document.getElementById('graficoBarras'), {
         type: 'bar',
         data: {
-          labels: ['SUS','SESC'],
+          labels: ['SUS','SESC','DIVERSAS'],
           datasets: [{
-            data: [0,0],
-            backgroundColor: ['rgba(34,197,94,.7)','rgba(59,130,246,.7)'],
-            borderColor: ['#22c55e','#3b82f6'],
+            data: [0,0,0],
+            backgroundColor: ['rgba(34,197,94,.7)','rgba(59,130,246,.7)','rgba(245,158,11,.7)'],
+            borderColor: ['#22c55e','#3b82f6','#f59e0b'],
             borderWidth: 1,
             borderRadius: 6,
             borderSkipped: false
@@ -614,6 +638,7 @@ function getDaysInMonth(ym) {
       inp.addEventListener('change', () => {
         buildTable('hSus','bSus','sus');
         buildTable('hSesc','bSesc','sesc');
+        buildTable('hDiversas','bDiversas','diversas');
         load();
       });
 
@@ -623,15 +648,17 @@ function getDaysInMonth(ym) {
     }
 
     function recalc() {
-      let s = 0, e = 0;
+      let s = 0, e = 0, d = 0;
       document.querySelectorAll('.sus').forEach(i => s += +i.value || 0);
       document.querySelectorAll('.sesc').forEach(i => e += +i.value || 0);
+      document.querySelectorAll('.diversas').forEach(i => d += +i.value || 0);
       document.getElementById('txtSus').textContent = s;
       document.getElementById('txtSesc').textContent = e;
-      document.getElementById('txtSoma').textContent = s + e;
+      document.getElementById('txtDiversas').textContent = d;
+      document.getElementById('txtSoma').textContent = s + e + d;
       document.getElementById('txtFinal').textContent =
-        ((s + e) * 1.0 + 150).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
-      if (chart) { chart.data.datasets[0].data = [s,e]; chart.update(); }
+        ((s + e + d) * 1.0 + 150).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+      if (chart) { chart.data.datasets[0].data = [s,e,d]; chart.update(); }
       save();
     }
 
@@ -644,7 +671,7 @@ function getDaysInMonth(ym) {
     function save() {
       const mes = document.getElementById('mesReferencia').value;
       if (!mes) return;
-      const data = { sus: getValues('sus'), sesc: getValues('sesc') };
+      const data = { sus: getValues('sus'), sesc: getValues('sesc'), diversas: getValues('diversas') };
 
       // Proteção: nunca sobrescreve um mês já preenchido com tudo zerado
       const rawExistente = localStorage.getItem('lab_'+mes);
@@ -684,6 +711,7 @@ function getDaysInMonth(ym) {
             const d = JSON.parse(raw2);
             document.querySelectorAll('.sus').forEach(i => i.value = d.sus?.[i.dataset.day] ?? 0);
             document.querySelectorAll('.sesc').forEach(i => i.value = d.sesc?.[i.dataset.day] ?? 0);
+            document.querySelectorAll('.diversas').forEach(i => i.value = d.diversas?.[i.dataset.day] ?? 0);
           } catch(e) {}
         }
         recalc();
@@ -698,8 +726,11 @@ function getDaysInMonth(ym) {
       const mes = document.getElementById('mesReferencia').value;
       const d = localStorage.getItem('lab_'+mes);
       if (!d) { alert('Nenhum dado para exportar.'); return; }
+      let parsed = {};
+      try { parsed = JSON.parse(d) || {}; } catch(e) { parsed = {}; }
+      const payload = JSON.stringify({ mes, sus: parsed.sus || {}, sesc: parsed.sesc || {}, diversas: parsed.diversas || {} }, null, 2);
       const a = Object.assign(document.createElement('a'), {
-        href: URL.createObjectURL(new Blob([d],{type:'application/json'})),
+        href: URL.createObjectURL(new Blob([payload],{type:'application/json'})),
         download: `laboratorio_${mes}.json`
       });
       a.click();
